@@ -1,0 +1,66 @@
+services:
+  orders-ms:
+    build:
+      context: ./orders-ms
+      dockerfile: Dockerfile
+    volumes:
+      - ./orders-ms/src:/usr/src/app/src:Z
+    command:
+      - sh
+      - -c
+      - |
+        npm run prisma:migrate
+        npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=postgres://postgres:postgres@orders-db:5432/orders_db
+    depends_on:
+      - nats-server
+      - orders-db
+  products-ms:
+    build:
+      context: ./products-ms
+      dockerfile: Dockerfile
+    volumes:
+      - ./products-ms/src:/usr/src/app/src:Z
+    command:
+      - sh
+      - -c
+      - |
+        npm run prisma:migrate
+        npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+      - DATABASE_URL=file:./dev.db
+    depends_on:
+      - nats-server
+  client-gateway:
+    build:
+      context: ./client-gateway
+      dockerfile: Dockerfile
+    ports:
+      - ${CLIENT_GATEWAY_PORT}:3000
+    volumes:
+      - ./client-gateway/src:/usr/src/app/src:Z
+    command: npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+    depends_on:
+      - nats-server
+  orders-db:
+    image: postgres:16-alpine
+    volumes:
+      - ./orders-ms/postgres/data:/var/lib/postgresql/data:Z
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=orders_db
+  nats-server:
+    image: nats:latest
+    ports:
+      - 8222:8222
