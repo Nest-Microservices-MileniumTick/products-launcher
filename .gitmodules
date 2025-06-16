@@ -1,0 +1,9 @@
+[submodule "products-ms"]
+	path = products-ms
+	url = git@github.com:Nest-Microservices-MileniumTick/products-microservice.git
+[submodule "orders-ms"]
+	path = orders-ms
+	url = git@github.com:Nest-Microservices-MileniumTick/orders-microservice.git
+[submodule "client-gateway"]
+	path = client-gateway
+	url = git@github.com:Nest-Microservices-MileniumTick/client-gateway.git
